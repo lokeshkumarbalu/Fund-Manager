@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>FundManager.Store</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="CsvStructure\Fund.csv" />
+    <None Include="CsvStructure\Person.csv" />
+    <None Include="CsvStructure\Transaction.csv" />
+    <Compile Include="Constants.fs" />
+    <Compile Include="Common.fs" />
+    <Compile Include="FileStore.fs" />
+    <Compile Include="DbStore.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharp.Data" Version="3.1.1" />
+    <PackageReference Include="LiteDB.FSharp" Version="2.11.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.fsproj" />
+    <ProjectReference Include="..\Logging\Logging.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.7.0" />
+  </ItemGroup>
+
+  <ItemGroup />
+
+</Project>

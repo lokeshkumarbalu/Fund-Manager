@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>FundManager.Logging</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="ILog.fs" />
+    <Compile Include="ConsoleLog.fs" />
+    <Compile Include="CompositeLog.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NLog" Version="4.6.6" />
+    <PackageReference Include="NLog.Config" Version="4.6.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\Lokesh\.nuget\packages\nlog.config\4.6.6\contentFiles\any\any\NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.7.0" />
+  </ItemGroup>
+
+</Project>
