@@ -1,35 +1,19 @@
 ﻿namespace FundManager.Application
 
+open FundManager.Store
+
 module BusinessLogic =
 
-    open FundManager.Store
     open FundManager.Common.Result
     open FundManager.Domain
-
-    let private toPersonEntity value =
-        match value with 
-        | Entity.Person x   -> [x]
-        | _                 -> []
-
-    let private toTransactionEntity value =
-        match value with 
-        | Entity.Transaction x  -> [x]
-        | _                     -> []
-    
-    let private toFundEntity value =
-        match value with
-        | Entity.Fund x     -> [x]
-        | _                 -> []
-
 
     [<RequireQualifiedAccess>]
     module DataLoader = 
 
-        let loadFunds (dbStore: DbStore) (fileStore: FileStore) =
+        let loadFunds (fundStore: IFundStore) (fileStore: FileStore) =
             result {    
                 let! fileRawFundList = fileStore.GetFunds()
-                let! dbRawFundList = dbStore.GetAll(EntityType.FundType)
-                let dbFundList = dbRawFundList |> List.collect toFundEntity
+                let! dbFundList = fundStore.GetAll()
 
                 let fileFundList = 
                     fileRawFundList
@@ -39,26 +23,22 @@ module BusinessLogic =
                 do 
                     dbFundList
                     |> List.except fileFundList
-                    |> List.map (fun x -> dbStore.Delete(x.Id |> EntityId.FundId))
+                    |> List.map fundStore.Delete
                     |> ignore
 
                 do 
                     fileFundList
                     |> List.except dbFundList
-                    |> List.map Entity.Fund
-                    |> List.map dbStore.Add
+                    |> List.map fundStore.Add
                     |> ignore
 
                 return "Loaded funds from file and saved in DB"
             }
 
-        let loadPeople (dbStore: DbStore) (fileStore: FileStore) = 
+        let loadPeople (personStore: IPersonStore) (fileStore: FileStore) = 
             result {
                 let! fileRawPeopleList = fileStore.GetPeople()
-
-                let! dbPeopleList = 
-                    dbStore.GetAll(EntityType.PersonType)
-                    |> Result.map (List.collect toPersonEntity)
+                let! dbPeopleList = personStore.GetAll()
 
                 let filePeopleList = 
                     fileRawPeopleList 
@@ -68,24 +48,22 @@ module BusinessLogic =
                 do 
                     dbPeopleList
                     |> List.except filePeopleList
-                    |> List.map (fun x -> dbStore.Delete (x.Id |> EntityId.PersonId))
+                    |> List.map personStore.Delete
                     |> ignore
 
                 do 
                     filePeopleList
                     |> List.except dbPeopleList
-                    |> List.map Entity.Person
-                    |> List.map dbStore.Add
+                    |> List.map personStore.Add
                     |> ignore
 
                 return "Loaded people from file and saved in DB" 
             }
     
-        let loadTransactions (dbStore: DbStore) (fileStore: FileStore) =
+        let loadTransactions (transactionStore: ITransactionStore) (fileStore: FileStore) =
             result {    
                 let! fileRawTransactionList = fileStore.GetTransactions()
-                let! dbRawTransactionList = dbStore.GetAll(EntityType.TransactionType)
-                let dbTransactionList = dbRawTransactionList |> List.collect toTransactionEntity
+                let! dbTransactionList = transactionStore.GetAll()
 
                 let fileTransactionList = 
                     fileRawTransactionList
@@ -95,14 +73,13 @@ module BusinessLogic =
                 do 
                     dbTransactionList
                     |> List.except fileTransactionList
-                    |> List.map (fun x -> dbStore.Delete(x.Id |> EntityId.TransactionId))
+                    |> List.map transactionStore.Delete
                     |> ignore
 
                 do 
                     fileTransactionList
                     |> List.except dbTransactionList
-                    |> List.map Entity.Transaction
-                    |> List.map dbStore.Add
+                    |> List.map transactionStore.Add
                     |> ignore
 
                 return "Loaded transactions from file and saved in DB"
@@ -111,15 +88,12 @@ module BusinessLogic =
 
     [<RequireQualifiedAccess>]
     module FundProcessor = 
-        let getBalancePerPerson (dbStore: DbStore) =
-            result {
-                let! transactions = 
-                    dbStore.GetAll(EntityType.TransactionType)
-                    |> Result.map (List.collect toTransactionEntity)
+        open FundManager.Logging
 
-                let! funds = 
-                    dbStore.GetAll(EntityType.FundType)
-                    |> Result.map (List.collect toFundEntity)
+        let getBalance (transactionStore: ITransactionStore) (fundStore: IFundStore) =
+            result {
+                let! transactions = transactionStore.GetAll()
+                let! funds = fundStore.GetAll()
 
                 let expected =
                     funds
@@ -129,7 +103,7 @@ module BusinessLogic =
 
                 let actual = 
                     transactions
-                    |> List.filter (fun x -> x.Type = Transaction.Type.Deposit)
+                    |> List.filter (fun x -> x.Type = TransactionAttributes.Type.Deposit)
                     |> List.groupBy (fun x -> (x.Description))
                     |> List.map (fun (contributor, trans) -> 
                         (contributor, trans |> List.sumBy(fun x -> x.Amount)))
@@ -145,3 +119,9 @@ module BusinessLogic =
 
                 return returnValue
             }
+        
+        let printBalance (log: ILog) tuple =
+            log.Info "| %-20s | %8s | %8s | %8s |" "CONTRIBUTOR NAME" "EXPECTED" "ACTUAL" "BALANCE"
+            tuple 
+            |> List.iter (fun (name, expected, actual, balance) -> 
+            log.Info "| %-20s | %8.2M | %8.2M | %8.2M |" name expected actual balance)

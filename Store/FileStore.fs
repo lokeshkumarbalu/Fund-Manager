@@ -10,25 +10,25 @@ type FileStore (directoryInfo: DirectoryInfo, log: ILog) =
     let onError ex = Common.onError log ex
 
     let extractPersonDetails (row: CsvProvider<Constants.CsvStructure.Person>.Row) = 
-        { Person.Id = 0
-          Person.Name = row.Name
-          Person.StartDate = row.StartDate.ToUniversalTime()
-          Person.Status = Person.Status.fromString(row.Status) }
+        { Id = 0
+          Name = row.Name
+          StartDate = row.StartDate.ToUniversalTime()
+          Status = PersonAttributes.Status.fromString(row.Status) }
 
     let extractTransactionDetails (row: CsvProvider<Constants.CsvStructure.Transaction>.Row) = 
-        { Transaction.Id = 0
-          Transaction.Type = Transaction.Type.fromString(row.Category)
-          Transaction.Amount = row.Amount
-          Transaction.Date = row.Date.ToUniversalTime()
-          Transaction.Currency = Transaction.Currency.fromString(row.Currency)
-          Transaction.Description = row.Description }
+        { Id = 0
+          Type = TransactionAttributes.Type.fromString(row.Category)
+          Amount = row.Amount
+          Date = row.Date.ToUniversalTime()
+          Currency = Currency.fromString(row.Currency)
+          Description = row.Description }
 
     let extractFundDetails (row: CsvProvider<Constants.CsvStructure.Fund>.Row) =
-        { Fund.Id = 0
-          Fund.YearMonth = row.YearMonth
-          Fund.Contributor = row.Contributor
-          Fund.Amount = row.Amount
-          Fund.Comment = row.Comment }
+        { Id = 0
+          YearMonth = row.YearMonth
+          Contributor = row.Contributor
+          Amount = row.Amount
+          Comment = row.Comment }
 
     
     (* Exposed methods here *)

@@ -2,7 +2,7 @@
 module FundManager.Application.Constants
 
     [<Literal>]
-    let DataTransferPath = @"C:\Users\Lokesh\Documents\FundManager\"
+    let DataTransferPath = @"C:\Users\Lokesh\Documents\FundManager"
 
     [<Literal>]
     let ApplciationLoggerName = "FundManager.Application"

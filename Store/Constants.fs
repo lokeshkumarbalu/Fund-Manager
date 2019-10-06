@@ -26,3 +26,14 @@ module FundManager.Store.Constants
         [<Literal>]
         let Transactions = "Transactions.csv"
 
+    [<RequireQualifiedAccess>]
+    module CollectionNames = 
+        [<Literal>] 
+        let Fund = "funds"
+
+        [<Literal>] 
+        let Person = "people"
+
+        [<Literal>] 
+        let Transaction = "transactions"
+
